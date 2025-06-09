@@ -1,9 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tauri::async_runtime::set(tokio::runtime::Handle::current());
+use tauri::Result;
 
-    tauri_repo_lib::run().await
+fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+    tauri_repo_lib::run()
 }

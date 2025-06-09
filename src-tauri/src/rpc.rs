@@ -26,8 +26,6 @@ impl InternalRpc for InternalRpcImpl {
 }
 
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    // tracing_subscriber::fmt::init();
-
     let internal_service = InternalRpcServer::new(InternalRpcImpl::default());
 
     info!("rpc run");

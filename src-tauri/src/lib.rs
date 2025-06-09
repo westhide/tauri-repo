@@ -1,8 +1,8 @@
 mod log;
 mod rpc;
 
-use crate::log::{error, info, init_tauri_log_plugin};
-use tauri::async_runtime::spawn;
+use crate::log::{error, info};
+use tauri::{async_runtime::spawn, Result};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -12,9 +12,9 @@ fn greet(name: &str) -> String {
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
+pub fn run() -> Result<()> {
     tauri::Builder::default()
-        .plugin(init_tauri_log_plugin())
+        // .plugin(crate::log::init_tauri_log_plugin())
         .plugin(tauri_plugin_opener::init())
         .setup(|_| {
             info!("tauri setup");
@@ -26,9 +26,5 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])
-        .run(tauri::generate_context!())?;
-
-    rpc::run().await?;
-
-    Ok(())
+        .run(tauri::generate_context!())
 }
