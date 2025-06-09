@@ -26,11 +26,11 @@ impl InternalRpc for InternalRpcImpl {
 }
 
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt::init();
+    // tracing_subscriber::fmt::init();
 
     let internal_service = InternalRpcServer::new(InternalRpcImpl::default());
 
-    info!("start rpc server");
+    info!("rpc run");
 
     Server::builder()
         .accept_http1(true)
