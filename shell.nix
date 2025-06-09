@@ -6,6 +6,7 @@ pkgs.mkShell {
   shellHook = ''
     export ANDROID_HOME=${ANDROID_HOME}
     export NDK_HOME="$ANDROID_HOME/ndk/$(ls -1 $ANDROID_HOME/ndk)"
+    export WEBKIT_DISABLE_DMABUF_RENDERER=1
   '';
 
   nativeBuildInputs = with pkgs; [

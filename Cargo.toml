@@ -15,3 +15,6 @@ console_error_panic_hook = "0.1.7"
 
 [workspace]
 members = ["src-tauri"]
+
+[build-dependencies]
+tonic-build = { version = "0.13" }
