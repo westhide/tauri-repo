@@ -1,4 +1,4 @@
-use crate::log::info;
+use crate::log::{debug, info};
 use internal::{
     internal_rpc_server::{InternalRpc, InternalRpcServer},
     Username,
@@ -15,7 +15,7 @@ pub struct InternalRpcImpl {}
 #[tonic::async_trait]
 impl InternalRpc for InternalRpcImpl {
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
-        println!("Got a request: {:?}", req);
+        debug!("Got a request: {:?}", req);
 
         let rep = Username {
             username: format!("Username: {}", req.into_inner().username),
