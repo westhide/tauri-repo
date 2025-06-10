@@ -1,5 +1,5 @@
-mod log;
-mod rpc;
+pub mod log;
+pub mod rpc;
 
 use crate::log::{error, info, trace};
 use tauri::{async_runtime::spawn, Result};

@@ -4,6 +4,6 @@
 use tauri::Result;
 
 fn main() -> Result<()> {
-    tracing_subscriber::fmt::init();
+    tauri_repo_lib::log::init_tracing_subscriber_log();
     tauri_repo_lib::run()
 }
