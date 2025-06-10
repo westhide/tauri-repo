@@ -1,13 +1,14 @@
 mod log;
 mod rpc;
 
-use crate::log::{error, info};
+use crate::log::{error, info, trace};
 use tauri::{async_runtime::spawn, Result};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 #[log::instrument]
 fn greet(name: &str) -> String {
+    trace!("Greet");
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 

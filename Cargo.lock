@@ -4881,6 +4881,7 @@ dependencies = [
  "leptos",
  "serde",
  "serde-wasm-bindgen",
+ "tokio",
  "tonic-build",
  "wasm-bindgen",
  "wasm-bindgen-futures",
