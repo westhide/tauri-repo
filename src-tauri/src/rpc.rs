@@ -1,21 +1,22 @@
-use crate::log::{debug, info};
+mod internal {
+    tonic::include_proto!("internal");
+}
+
+use crate::log::{info, instrument};
 use internal::{
     internal_rpc_server::{InternalRpc, InternalRpcServer},
     Username,
 };
 use tonic::{transport::Server, Request, Response, Status};
 
-mod internal {
-    tonic::include_proto!("internal");
-}
-
 #[derive(Debug, Default)]
 pub struct InternalRpcImpl {}
 
 #[tonic::async_trait]
 impl InternalRpc for InternalRpcImpl {
+    #[instrument]
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
-        debug!("Got a request: {:?}", req);
+        info!("Got a request: {:?}", req);
 
         let rep = Username {
             username: format!("Username: {}", req.into_inner().username),

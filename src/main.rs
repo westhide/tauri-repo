@@ -1,4 +1,5 @@
-mod app;
+pub mod api;
+pub mod app;
 
 use app::*;
 use leptos::prelude::*;

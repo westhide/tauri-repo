@@ -4901,12 +4901,16 @@ name = "tauri-repo-ui"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "hyper-util",
  "js-sys",
  "leptos",
  "serde",
  "serde-wasm-bindgen",
  "tokio",
+ "tonic",
  "tonic-build",
+ "tonic-web",
+ "tower",
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
