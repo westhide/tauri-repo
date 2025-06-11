@@ -37,7 +37,7 @@ pub fn App() -> impl IntoView {
             let new_msg = invoke("greet", args).await.as_string().unwrap();
             set_greet_msg.set(new_msg);
 
-            crate::api::call_grpc().await;
+            if let Err(err) = crate::rpc::call_grpc().await {}
         });
     };
 
