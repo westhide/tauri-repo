@@ -1,5 +1,7 @@
 use crate::log::{info, instrument};
-use http::{Request, Response};
+use gloo::net::http::{Headers, Method, RequestBuilder};
+use http::{header::ToStrError, Request, Response};
+use nill::{nil, Nil};
 use std::{
     error::Error,
     future::Future,
@@ -11,18 +13,42 @@ use tonic_web::GrpcWebCall;
 use tower::Service;
 
 #[derive(Debug, Clone)]
-pub struct Client {}
+pub struct HttpClient {}
 
-impl Client {
+impl HttpClient {
     pub fn new() -> Self {
-        Client {}
+        HttpClient {}
     }
 
-    #[instrument(skip_all, ret, err, fields(url = ?request.uri()))]
-    async fn call_impl(
+    #[instrument(ret, err, fields(url = ?request.uri()))]
+    async fn grpc_web_call(
         self,
         request: Request<GrpcWebCall<Body>>,
-    ) -> Result<Response<Body>, FetchError> {
+    ) -> Result<Response<Body>, HttpError> {
+        info!("====");
+
+        let url = request.uri().path();
+        let headers = Headers::new();
+        for (name, value) in request.headers() {
+            headers.append(name.as_str(), value.to_str()?);
+        }
+
+        let body_bytes = hyper::body::to_bytes(request.into_body()).await.unwrap();
+        let body_array: Uint8Array = body_bytes.as_ref().into();
+        let body_js: &JsValue = body_array.as_ref();
+        let req = RequestBuilder::new(url)
+            .method(Method::POST)
+            .headers(headers)
+            .body(request.body());
+
+        // let (parts,grpc_web_call) = request.into_parts();
+
+        // Request::from_parts(parts, body)
+
+        // let body_bytes = hyper::body::to_bytes(rpc.into_body()).await.unwrap();
+        // let body_array: Uint8Array = body_bytes.as_ref().into();
+        // let body_js: &JsValue = body_array.as_ref();
+
         todo!()
     }
 
@@ -83,29 +109,24 @@ impl Client {
     //     }
 }
 
-#[derive(Debug)]
-pub struct FetchError {}
-
-impl Error for FetchError {}
-
-impl std::fmt::Display for FetchError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
+#[derive(Debug, thiserror::Error)]
+pub enum HttpError {
+    #[error(transparent)]
+    HttpHeaderToStr(#[from] ToStrError),
 }
 
-impl Service<Request<GrpcWebCall<Body>>> for Client {
+impl Service<Request<GrpcWebCall<Body>>> for HttpClient {
     type Response = Response<Body>;
 
-    type Error = FetchError;
+    type Error = HttpError;
 
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 
-    fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
+    fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<Nil, Self::Error>> {
+        Poll::Ready(Ok(nil))
     }
 
     fn call(&mut self, request: Request<GrpcWebCall<Body>>) -> Self::Future {
-        Box::pin(self.clone().call_impl(request))
+        Box::pin(self.clone().grpc_web_call(request))
     }
 }

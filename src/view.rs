@@ -16,7 +16,7 @@ struct GreetArgs<'a> {
 }
 
 #[component]
-pub fn App() -> impl IntoView {
+pub fn Main() -> impl IntoView {
     let (name, set_name) = signal(String::new());
     let (greet_msg, set_greet_msg) = signal(String::new());
 
