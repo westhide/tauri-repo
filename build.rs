@@ -2,7 +2,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .build_client(true)
         .build_server(false)
-        .compile_protos(&["./proto/internal.proto"], &["./proto"])?;
+        .compile_protos(
+            &["./proto/internal.proto", "./proto/helloworld.proto"],
+            &["./proto"],
+        )?;
 
     Ok(())
 }

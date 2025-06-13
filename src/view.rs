@@ -33,10 +33,10 @@ pub fn Main() -> impl IntoView {
                 return;
             }
 
-            let args = serde_wasm_bindgen::to_value(&GreetArgs { name: &name }).unwrap();
-            // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-            let new_msg = invoke("greet", args).await.as_string().unwrap();
-            set_greet_msg.set(new_msg);
+            // let args = serde_wasm_bindgen::to_value(&GreetArgs { name: &name }).unwrap();
+            // // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+            // let new_msg = invoke("greet", args).await.as_string().unwrap();
+            // set_greet_msg.set(new_msg);
 
             if let Err(err) = crate::rpc::call_grpc().await {}
         });
