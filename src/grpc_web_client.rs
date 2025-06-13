@@ -1,4 +1,4 @@
-use crate::log::{debug, info, instrument};
+use crate::log::{debug, instrument};
 use gloo::net::http::{
     Headers as GlooHttpHeaders, Method, Request as GlooHttpRequest,
     RequestBuilder as GlooHttpRequestBuilder, Response as GlooHttpResponse,
@@ -52,7 +52,6 @@ impl HttpRequestExt for HttpRequest<GrpcWebCall<TonicBody>> {
     async fn try_into_fetch(self) -> Result<GlooHttpRequest, Error> {
         let uri = self.uri().to_string();
         let headers = GlooHttpHeaders::new();
-        info!("=================== {:?}", self.headers());
         for (key, val) in self.headers() {
             headers.set(key.as_str(), val.to_str()?);
         }
@@ -73,38 +72,33 @@ trait HttpResponseExt {
 impl HttpResponseExt for GlooHttpResponse {
     async fn try_into_grpc(self) -> Result<HttpResponse<TonicBody>, Error> {
         let status = self.status();
-        // let body = fetch.body().unwrap();
+        let body = self.body().unwrap();
         let body = TonicBody::empty();
-        let mut resp = HttpResponse::builder().status(status).body(body)?;
+        let mut grpc = HttpResponse::builder().status(status).body(body)?;
 
-        let headers = resp.headers_mut();
+        let headers = grpc.headers_mut();
         for (key, val) in self.headers().entries() {
             headers.insert(HeaderName::try_from(key)?, val.parse()?);
         }
-        debug!("headers: {:?}", resp.headers());
-        Ok(resp)
+        Ok(grpc)
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct Client {
-    base_url: String,
-}
+pub struct Client {}
 
 impl Client {
-    pub fn new(base_url: String) -> Self {
-        Client { base_url }
+    pub fn new() -> Self {
+        Client {}
     }
 
-    #[instrument(skip_all, ret, err, fields(url = ?grpc.uri()))]
+    #[instrument(skip_all, err, fields(url = ?grpc.uri()))]
     async fn grpc_web_call(
         self,
         grpc: HttpRequest<GrpcWebCall<TonicBody>>,
     ) -> Result<HttpResponse<TonicBody>, Error> {
         let fetch = grpc.try_into_fetch().await?;
-        let resp = fetch.send().await?;
-        info!("[RESP]: {resp:?}");
-        resp.try_into_grpc().await
+        fetch.send().await?.try_into_grpc().await
     }
 }
 

@@ -7,6 +7,7 @@ before-build-command = "trunk build"
 before-dev-command   = "trunk serve"
 dev-url              = "http://localhost:1420"
 frontend-dist        = "../dist"
+# rpc-url              = "http://localhost:3000"
 
 [app]
 with-global-tauri = true

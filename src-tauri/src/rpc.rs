@@ -7,16 +7,16 @@ use internal::{
     internal_rpc_server::{InternalRpc, InternalRpcServer},
     Username,
 };
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{codec::CompressionEncoding, transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
-use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use tower_http::cors::CorsLayer;
 
 #[derive(Debug, Default)]
 pub struct InternalRpcImpl {}
 
 #[tonic::async_trait]
 impl InternalRpc for InternalRpcImpl {
-    #[instrument(ret, err)]
+    #[instrument(skip_all, err)]
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
         info!("Got a request: {:?}", req);
 
@@ -31,16 +31,16 @@ impl InternalRpc for InternalRpcImpl {
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     info!("rpc run");
 
-    let addr = "127.0.0.1:3000".parse()?;
-    let service = InternalRpcServer::new(InternalRpcImpl::default());
+    let internal_rpc = InternalRpcImpl::default();
+    let service = InternalRpcServer::new(internal_rpc).accept_compressed(CompressionEncoding::Zstd);
 
+    let socket = "127.0.0.1:3000".parse()?;
     Server::builder()
         .accept_http1(true)
-        // .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .layer(GrpcWebLayer::new())
         .add_service(service)
-        .serve(addr)
+        .serve(socket)
         .await?;
 
     Ok(())

@@ -8,6 +8,8 @@ use hello_world::{
     HelloReply, HelloRequest,
 };
 use tonic::{transport::Server, Request, Response, Status};
+use tonic_web::GrpcWebLayer;
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 #[derive(Default)]
 pub struct MyGreeter {}
@@ -35,8 +37,8 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .accept_http1(true)
-        .layer(tower_http::cors::CorsLayer::new())
-        .layer(tonic_web::GrpcWebLayer::new())
+        .layer(CorsLayer::permissive())
+        .layer(GrpcWebLayer::new())
         .add_service(service)
         .serve(addr)
         .await?;

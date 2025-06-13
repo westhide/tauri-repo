@@ -7,7 +7,6 @@ use tauri::{async_runtime::spawn, Result};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-#[instrument]
 fn greet(name: &str) -> String {
     trace!("Greet");
     format!("Hello, {}! You've been greeted from Rust!", name)
@@ -20,7 +19,7 @@ pub fn run() -> Result<()> {
         .setup(|_| {
             info!("tauri setup");
             spawn(async {
-                if let Err(err) = rpc_test::run().await {
+                if let Err(err) = rpc::run().await {
                     error!("rpc run failed: {err}");
                 }
                 info!("rpc finish");
