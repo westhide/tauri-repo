@@ -14,11 +14,13 @@ serde-wasm-bindgen       = { version = "0.6" }
 wasm-bindgen             = { version = "0.2" }
 wasm-bindgen-futures     = { version = "0.4" }
 
+bytes                      = { version = "1" }
+futures                    = { version = "0.3", features = ["alloc"] }
 gloo                       = { version = "0.11" }
 http                       = { version = "1.3" }
 http-body                  = { version = "1.0" }
 http-body-util             = { version = "0.1" }
-nill                       = { version = "0.1.2" }
+nill                       = { version = "1.0.0" }
 prost                      = { version = "0.13" }
 thiserror                  = { version = "2.0" }
 tonic                      = { version = "0.13", default-features = false, features = ["codegen", "prost"] }
@@ -26,6 +28,7 @@ tonic-web                  = { version = "0.13" }
 tower                      = { version = "0.5" }
 tracing                    = { version = "0.1" }
 tracing-browser-subscriber = { version = "0.2" }
+wasm-streams               = { version = "0.4" }
 web-sys                    = { version = "0.3" }
 # tokio = { version = "1", features = ["rt", "macros"] }
 # hyper-util = { version = "0.1.4", features = ["client"]}

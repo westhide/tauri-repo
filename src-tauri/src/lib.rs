@@ -2,7 +2,7 @@ pub mod log;
 pub mod rpc;
 pub mod rpc_test;
 
-use crate::log::{error, info, instrument, trace};
+use crate::log::{error, info, trace};
 use tauri::{async_runtime::spawn, Result};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/

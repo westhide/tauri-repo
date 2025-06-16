@@ -32,8 +32,10 @@ pub fn Main() -> impl IntoView {
             if name.is_empty() {
                 return;
             }
-            if let Err(err) = crate::rpc::call_grpc().await {
-                error!(err)
+
+            match crate::rpc::get_username(name).await {
+                Ok(username) => set_greet_msg.set(username),
+                Err(err) => error!(err),
             }
         });
     };

@@ -8,13 +8,13 @@ use crate::{
 };
 use http::Uri;
 use internal::{internal_rpc_client::InternalRpcClient, Username};
-use nill::{nil, Nil};
 use std::str::FromStr;
+use tonic::Request;
 use tonic_web::GrpcWebClientLayer;
 use tower::ServiceBuilder;
 
 #[instrument(skip_all, err)]
-pub async fn call_grpc() -> Result<Nil, Box<dyn std::error::Error>> {
+pub async fn get_username(username: String) -> Result<String, Box<dyn std::error::Error>> {
     info!("browser rpc call");
 
     let service = ServiceBuilder::new()
@@ -24,13 +24,11 @@ pub async fn call_grpc() -> Result<Nil, Box<dyn std::error::Error>> {
     let uri = Uri::from_str("http://127.0.0.1:3000")?;
     let mut client = InternalRpcClient::with_origin(service, uri);
 
-    let request = tonic::Request::new(Username {
-        username: "Tonic".into(),
-    });
+    let request = Request::new(Username { username });
 
     let response = client.get_username(request).await?;
 
     info!(?response);
 
-    Ok(nil)
+    Ok(response.into_inner().username)
 }

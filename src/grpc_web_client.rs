@@ -1,4 +1,6 @@
 use crate::log::{debug, instrument};
+use bytes::Bytes;
+use futures::{Stream, TryStreamExt};
 use gloo::net::http::{
     Headers as GlooHttpHeaders, Method, Request as GlooHttpRequest,
     RequestBuilder as GlooHttpRequestBuilder, Response as GlooHttpResponse,
@@ -10,6 +12,7 @@ use http::{
     },
     Error as HttpError, HeaderName, Request as HttpRequest, Response as HttpResponse,
 };
+use http_body::{Body as HttpBody, Frame as HttpBodyFrame};
 use http_body_util::BodyExt;
 use js_sys::Uint8Array;
 use nill::{nil, Nil};
@@ -18,13 +21,14 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tonic::{body::Body as TonicBody, Status};
+use tonic::{body::Body as GrpcBody, Status};
 use tonic_web::GrpcWebCall;
 use tower::Service;
-use web_sys::RequestMode;
+use wasm_streams::{readable::IntoStream, ReadableStream as WasmReadableStream};
+use web_sys::{ReadableStream as HttpReadableStream, RequestMode};
 
 #[derive(Debug, thiserror::Error)]
-pub enum Error {
+pub enum GrpcWebError {
     #[error(transparent)]
     HttpError(#[from] HttpError),
 
@@ -42,14 +46,17 @@ pub enum Error {
 
     #[error(transparent)]
     GlooNet(#[from] gloo::net::Error),
+
+    #[error("{0}")]
+    Generic(String),
 }
 
 trait HttpRequestExt {
-    async fn try_into_fetch(self) -> Result<GlooHttpRequest, Error>;
+    async fn try_into_fetch(self) -> Result<GlooHttpRequest, GrpcWebError>;
 }
 
-impl HttpRequestExt for HttpRequest<GrpcWebCall<TonicBody>> {
-    async fn try_into_fetch(self) -> Result<GlooHttpRequest, Error> {
+impl HttpRequestExt for HttpRequest<GrpcWebCall<GrpcBody>> {
+    async fn try_into_fetch(self) -> Result<GlooHttpRequest, GrpcWebError> {
         let uri = self.uri().to_string();
         let headers = GlooHttpHeaders::new();
         for (key, val) in self.headers() {
@@ -66,46 +73,81 @@ impl HttpRequestExt for HttpRequest<GrpcWebCall<TonicBody>> {
 }
 
 trait HttpResponseExt {
-    async fn try_into_grpc(self) -> Result<HttpResponse<TonicBody>, Error>;
+    async fn try_into_grpc(self) -> Result<HttpResponse<GrpcBody>, GrpcWebError>;
 }
 
 impl HttpResponseExt for GlooHttpResponse {
-    async fn try_into_grpc(self) -> Result<HttpResponse<TonicBody>, Error> {
-        let status = self.status();
-        let body = self.body().unwrap();
-        let body = TonicBody::empty();
-        let mut grpc = HttpResponse::builder().status(status).body(body)?;
-
-        let headers = grpc.headers_mut();
-        for (key, val) in self.headers().entries() {
-            headers.insert(HeaderName::try_from(key)?, val.parse()?);
+    async fn try_into_grpc(self) -> Result<HttpResponse<GrpcBody>, GrpcWebError> {
+        if let Some(http_stream) = self.body() {
+            let body = GrpcBody::new(GrpcWebCallStream::new(http_stream));
+            let mut grpc = HttpResponse::builder().status(self.status()).body(body)?;
+            let headers = grpc.headers_mut();
+            for (key, val) in self.headers().entries() {
+                headers.insert(HeaderName::try_from(key)?, val.parse()?);
+            }
+            Ok(grpc)
+        } else {
+            Err(GrpcWebError::Generic(format!(
+                "HTTP content return None: {self:?}"
+            )))
         }
-        Ok(grpc)
     }
 }
 
-#[derive(Debug, Clone)]
+pub struct GrpcWebCallStream {
+    inner: Pin<Box<dyn Stream<Item = Result<HttpBodyFrame<Bytes>, GrpcWebError>>>>,
+}
+
+impl GrpcWebCallStream {
+    pub fn new(http_stream: HttpReadableStream) -> Self {
+        let wasm_stream = WasmReadableStream::from_raw(http_stream)
+            .into_stream()
+            .map_ok(|data| HttpBodyFrame::data(Bytes::from(Uint8Array::new(&data).to_vec())))
+            .map_err(|err| todo!());
+
+        Self {
+            inner: Box::pin(wasm_stream),
+        }
+    }
+}
+
+unsafe impl Send for GrpcWebCallStream {}
+
+impl HttpBody for GrpcWebCallStream {
+    type Data = Bytes;
+
+    type Error = GrpcWebError;
+
+    fn poll_frame(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+    ) -> Poll<Option<Result<HttpBodyFrame<Self::Data>, Self::Error>>> {
+        self.inner.as_mut().poll_next(cx)
+    }
+}
+
+#[derive(Debug, Default, Clone)]
 pub struct Client {}
 
 impl Client {
     pub fn new() -> Self {
-        Client {}
+        Self::default()
     }
 
     #[instrument(skip_all, err, fields(url = ?grpc.uri()))]
     async fn grpc_web_call(
         self,
-        grpc: HttpRequest<GrpcWebCall<TonicBody>>,
-    ) -> Result<HttpResponse<TonicBody>, Error> {
+        grpc: HttpRequest<GrpcWebCall<GrpcBody>>,
+    ) -> Result<HttpResponse<GrpcBody>, GrpcWebError> {
         let fetch = grpc.try_into_fetch().await?;
         fetch.send().await?.try_into_grpc().await
     }
 }
 
-impl Service<HttpRequest<GrpcWebCall<TonicBody>>> for Client {
-    type Response = HttpResponse<TonicBody>;
+impl Service<HttpRequest<GrpcWebCall<GrpcBody>>> for Client {
+    type Response = HttpResponse<GrpcBody>;
 
-    type Error = Error;
+    type Error = GrpcWebError;
 
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 
@@ -113,7 +155,7 @@ impl Service<HttpRequest<GrpcWebCall<TonicBody>>> for Client {
         Poll::Ready(Ok(nil))
     }
 
-    fn call(&mut self, grpc: HttpRequest<GrpcWebCall<TonicBody>>) -> Self::Future {
+    fn call(&mut self, grpc: HttpRequest<GrpcWebCall<GrpcBody>>) -> Self::Future {
         // TODO: void clone
         Box::pin(self.clone().grpc_web_call(grpc))
     }

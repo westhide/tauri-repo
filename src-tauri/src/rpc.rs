@@ -7,6 +7,7 @@ use internal::{
     internal_rpc_server::{InternalRpc, InternalRpcServer},
     Username,
 };
+use nill::{nil, Nil};
 use tonic::{codec::CompressionEncoding, transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::CorsLayer;
@@ -18,17 +19,13 @@ pub struct InternalRpcImpl {}
 impl InternalRpc for InternalRpcImpl {
     #[instrument(skip_all, err)]
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
-        info!("Got a request: {:?}", req);
-
-        let rep = Username {
+        Ok(Response::new(Username {
             username: format!("Username: {}", req.into_inner().username),
-        };
-
-        Ok(Response::new(rep))
+        }))
     }
 }
 
-pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn run() -> Result<Nil, Box<dyn std::error::Error>> {
     info!("rpc run");
 
     let internal_rpc = InternalRpcImpl::default();
@@ -43,5 +40,5 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         .serve(socket)
         .await?;
 
-    Ok(())
+    Ok(nil)
 }
