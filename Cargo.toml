@@ -23,7 +23,7 @@ http-body-util             = { version = "0.1" }
 nill                       = { version = "1.0.0" }
 prost                      = { version = "0.13" }
 thiserror                  = { version = "2.0" }
-tonic                      = { version = "0.13", default-features = false, features = ["codegen", "prost"] }
+tonic                      = { version = "0.13", default-features = false, features = ["codegen", "prost", "zstd"] }
 tonic-web                  = { version = "0.13" }
 tower                      = { version = "0.5" }
 tracing                    = { version = "0.1" }

@@ -9,7 +9,7 @@ use crate::{
 use http::Uri;
 use internal::{internal_rpc_client::InternalRpcClient, Username};
 use std::str::FromStr;
-use tonic::Request;
+use tonic::{codec::CompressionEncoding::Zstd, Request};
 use tonic_web::GrpcWebClientLayer;
 use tower::ServiceBuilder;
 
@@ -22,7 +22,9 @@ pub async fn get_username(username: String) -> Result<String, Box<dyn std::error
         .service(Client::new());
 
     let uri = Uri::from_str("http://127.0.0.1:3000")?;
-    let mut client = InternalRpcClient::with_origin(service, uri);
+    let mut client = InternalRpcClient::with_origin(service, uri)
+        .send_compressed(Zstd)
+        .accept_compressed(Zstd);
 
     let request = Request::new(Username { username });
 

@@ -1,4 +1,4 @@
-use crate::log::{debug, instrument};
+use crate::log::instrument;
 use bytes::Bytes;
 use futures::{Stream, TryStreamExt};
 use gloo::net::http::{
@@ -24,7 +24,8 @@ use std::{
 use tonic::{body::Body as GrpcBody, Status};
 use tonic_web::GrpcWebCall;
 use tower::Service;
-use wasm_streams::{readable::IntoStream, ReadableStream as WasmReadableStream};
+use wasm_bindgen::JsValue;
+use wasm_streams::ReadableStream as WasmReadableStream;
 use web_sys::{ReadableStream as HttpReadableStream, RequestMode};
 
 #[derive(Debug, thiserror::Error)]
@@ -49,6 +50,18 @@ pub enum GrpcWebError {
 
     #[error("{0}")]
     Generic(String),
+}
+
+macro_rules! grpc_err {
+    ($($arg:tt)*) => {
+        Err(GrpcWebError::Generic(format!($($arg)*)))
+    }
+}
+
+impl From<JsValue> for GrpcWebError {
+    fn from(err: JsValue) -> Self {
+        GrpcWebError::Generic(format!("{err:?}"))
+    }
 }
 
 trait HttpRequestExt {
@@ -87,9 +100,7 @@ impl HttpResponseExt for GlooHttpResponse {
             }
             Ok(grpc)
         } else {
-            Err(GrpcWebError::Generic(format!(
-                "HTTP content return None: {self:?}"
-            )))
+            grpc_err!("HTTP content return None: {self:?}")
         }
     }
 }
@@ -103,7 +114,7 @@ impl GrpcWebCallStream {
         let wasm_stream = WasmReadableStream::from_raw(http_stream)
             .into_stream()
             .map_ok(|data| HttpBodyFrame::data(Bytes::from(Uint8Array::new(&data).to_vec())))
-            .map_err(|err| todo!());
+            .map_err(GrpcWebError::from);
 
         Self {
             inner: Box::pin(wasm_stream),
@@ -122,6 +133,7 @@ impl HttpBody for GrpcWebCallStream {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Option<Result<HttpBodyFrame<Self::Data>, Self::Error>>> {
+        // TODO: void dyn
         self.inner.as_mut().poll_next(cx)
     }
 }

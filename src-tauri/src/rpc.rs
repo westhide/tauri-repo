@@ -8,7 +8,7 @@ use internal::{
     Username,
 };
 use nill::{nil, Nil};
-use tonic::{codec::CompressionEncoding, transport::Server, Request, Response, Status};
+use tonic::{codec::CompressionEncoding::Zstd, transport::Server, Request, Response, Status};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::CorsLayer;
 
@@ -29,7 +29,9 @@ pub async fn run() -> Result<Nil, Box<dyn std::error::Error>> {
     info!("rpc run");
 
     let internal_rpc = InternalRpcImpl::default();
-    let service = InternalRpcServer::new(internal_rpc).accept_compressed(CompressionEncoding::Zstd);
+    let service = InternalRpcServer::new(internal_rpc)
+        .send_compressed(Zstd)
+        .accept_compressed(Zstd);
 
     let socket = "127.0.0.1:3000".parse()?;
     Server::builder()
