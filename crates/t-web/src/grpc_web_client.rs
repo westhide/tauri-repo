@@ -1,4 +1,9 @@
-use crate::log::instrument;
+use std::{
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
+
 use bytes::Bytes;
 use futures::{Stream, TryStreamExt};
 use gloo::net::http::{
@@ -6,22 +11,18 @@ use gloo::net::http::{
     RequestBuilder as GlooHttpRequestBuilder, Response as GlooHttpResponse,
 };
 use http::{
+    Error as HttpError, HeaderName, Request as HttpRequest, Response as HttpResponse,
     header::{
         InvalidHeaderName as HttpInvalidHeaderName, InvalidHeaderValue as HttpInvalidHeaderValue,
         ToStrError as HttpHeaderToStrError,
     },
-    Error as HttpError, HeaderName, Request as HttpRequest, Response as HttpResponse,
 };
 use http_body::{Body as HttpBody, Frame as HttpBodyFrame};
 use http_body_util::BodyExt;
 use js_sys::Uint8Array;
-use nill::{nil, Nil};
-use std::{
-    future::Future,
-    pin::Pin,
-    task::{Context, Poll},
-};
-use tonic::{body::Body as GrpcBody, Status};
+use nill::{Nil, nil};
+use t_lib::log::instrument;
+use tonic::{Status, body::Body as GrpcBody};
 use tonic_web::GrpcWebCall;
 use tower::Service;
 use wasm_bindgen::JsValue;
@@ -117,9 +118,7 @@ impl GrpcWebCallStream {
             .map_ok(|data| HttpBodyFrame::data(Bytes::from(Uint8Array::new(&data).to_vec())))
             .map_err(GrpcWebError::from);
 
-        Self {
-            inner: Box::pin(wasm_stream),
-        }
+        Self { inner: Box::pin(wasm_stream) }
     }
 }
 
@@ -127,7 +126,6 @@ unsafe impl Send for GrpcWebCallStream {}
 
 impl HttpBody for GrpcWebCallStream {
     type Data = Bytes;
-
     type Error = GrpcWebError;
 
     fn poll_frame(
@@ -158,11 +156,9 @@ impl Client {
 }
 
 impl Service<HttpRequest<GrpcWebCall<GrpcBody>>> for Client {
-    type Response = HttpResponse<GrpcBody>;
-
     type Error = GrpcWebError;
-
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
+    type Response = HttpResponse<GrpcBody>;
 
     fn poll_ready(&mut self, _: &mut Context<'_>) -> Poll<Result<Nil, Self::Error>> {
         Poll::Ready(Ok(nil))

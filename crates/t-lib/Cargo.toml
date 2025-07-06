@@ -1,0 +1,29 @@
+[package]
+name = "t-lib"
+
+description = "t-lib"
+edition     = { workspace = true }
+license     = { workspace = true }
+version     = { workspace = true }
+
+
+[lib]
+
+
+[lints]
+workspace = true
+
+
+[dependencies]
+http                       = { workspace = true }
+thiserror                  = { workspace = true }
+tonic                      = { workspace = true }
+tracing                    = { workspace = true }
+tracing-browser-subscriber = { workspace = true, optional = true }
+tracing-subscriber         = { workspace = true, features = ["env-filter"] }
+
+
+[features]
+default         = []
+tonic-transport = ["tonic/transport"]
+tracing-browser = ["dep:tracing-browser-subscriber"]

@@ -1,5 +1,8 @@
-use crate::log::{info, instrument};
 use nill::{Nil, nil};
+use t_lib::{
+    error::Result,
+    log::{info, instrument},
+};
 use t_rpc::{
     Username,
     internal_rpc_server::{InternalRpc, InternalRpcServer},
@@ -15,13 +18,11 @@ pub struct InternalRpcImpl {}
 impl InternalRpc for InternalRpcImpl {
     #[instrument(skip_all, err)]
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
-        Ok(Response::new(Username {
-            username: format!("Username: {}", req.into_inner().username),
-        }))
+        Ok(Response::new(Username { username: format!("Username: {}", req.into_inner().username) }))
     }
 }
 
-pub async fn run() -> Result<Nil, Box<dyn std::error::Error>> {
+pub async fn run() -> Result<Nil> {
     info!("rpc run");
 
     let internal_rpc = InternalRpcImpl::default();

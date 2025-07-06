@@ -1,18 +1,19 @@
 pub mod log;
 pub mod rpc;
 
-use crate::log::{error, info, trace};
-use tauri::{async_runtime::spawn, Result};
+use nill::Nil;
+use t_lib::log::{error, info, trace};
+use tauri::{Result, async_runtime::spawn};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
     trace!("Greet");
-    format!("Hello, {}! You've been greeted from Rust!", name)
+    format!("Hello, {name}! You've been greeted from Rust!")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() -> Result<()> {
+pub fn run() -> Result<Nil> {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|_| {

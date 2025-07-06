@@ -4899,6 +4899,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "t-lib"
+version = "0.0.1"
+dependencies = [
+ "http 1.3.1",
+ "thiserror 2.0.12",
+ "tonic",
+ "tracing",
+ "tracing-browser-subscriber",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "t-rpc"
 version = "0.0.1"
 dependencies = [
@@ -4915,6 +4927,7 @@ dependencies = [
  "prost",
  "serde",
  "serde_json",
+ "t-lib",
  "t-rpc",
  "tauri",
  "tauri-build",
@@ -4925,7 +4938,6 @@ dependencies = [
  "tonic-web",
  "tower-http",
  "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -4944,13 +4956,13 @@ dependencies = [
  "nill",
  "serde",
  "serde-wasm-bindgen",
+ "t-lib",
  "t-rpc",
  "thiserror 2.0.12",
  "tonic",
  "tonic-web",
  "tower",
  "tracing",
- "tracing-browser-subscriber",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-streams",

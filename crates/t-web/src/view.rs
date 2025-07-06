@@ -1,7 +1,6 @@
-use crate::log::error;
-use leptos::task::spawn_local;
-use leptos::{ev::SubmitEvent, prelude::*};
+use leptos::{ev::SubmitEvent, prelude::*, task::spawn_local};
 use serde::{Deserialize, Serialize};
+use t_lib::log::error;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -35,7 +34,7 @@ pub fn Main() -> impl IntoView {
 
             match crate::rpc::get_username(name).await {
                 Ok(username) => set_greet_msg.set(username),
-                Err(err) => error!(err),
+                Err(err) => error!(%err),
             }
         });
     };
