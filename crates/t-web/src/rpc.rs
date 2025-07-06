@@ -5,9 +5,11 @@ use t_lib::{
     error::Result,
     log::{info, instrument},
 };
-use t_rpc::{Username, internal_rpc_client::InternalRpcClient};
-use tonic::Request;
-use tonic_web::GrpcWebClientLayer;
+use t_rpc::{
+    Request,
+    proto::{Username, internal_rpc_client::InternalRpcClient},
+    web::GrpcWebClientLayer,
+};
 use tower::ServiceBuilder;
 
 use crate::grpc_web_client::Client;

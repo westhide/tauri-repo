@@ -15,9 +15,16 @@ workspace = true
 
 
 [dependencies]
-prost = { workspace = true }
-tonic = { workspace = true, features = ["codegen", "prost"] }
+prost     = { workspace = true }
+tonic     = { workspace = true, features = ["codegen", "prost"] }
+tonic-web = { workspace = true }
 
 
 [build-dependencies]
 tonic-build = { workspace = true, features = ["prost"] }
+
+
+[features]
+default   = []
+router    = ["tonic/router"]
+transport = ["tonic/transport"]

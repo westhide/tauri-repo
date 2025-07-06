@@ -32,8 +32,6 @@ http-body-util = { workspace = true }
 nill           = { workspace = true }
 
 thiserror    = { workspace = true }
-tonic        = { workspace = true, features = ["codegen", "prost"] }
-tonic-web    = { workspace = true }
 tower        = { workspace = true }
 tracing      = { workspace = true }
 wasm-streams = { workspace = true }

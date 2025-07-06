@@ -4,17 +4,20 @@ use t_lib::{
     log::{info, instrument},
 };
 use t_rpc::{
-    Username,
-    internal_rpc_server::{InternalRpc, InternalRpcServer},
+    Request, Response, Status,
+    proto::{
+        Username,
+        internal_rpc_server::{InternalRpc, InternalRpcServer},
+    },
+    transport::Server,
+    web::GrpcWebLayer,
 };
-use tonic::{Request, Response, Status, transport::Server};
-use tonic_web::GrpcWebLayer;
 use tower_http::cors::CorsLayer;
 
 #[derive(Debug, Default)]
 pub struct InternalRpcImpl {}
 
-#[tonic::async_trait]
+#[t_rpc::async_trait]
 impl InternalRpc for InternalRpcImpl {
     #[instrument(skip_all, err)]
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
