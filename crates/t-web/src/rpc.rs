@@ -6,8 +6,8 @@ use t_lib::{
     log::{info, instrument},
 };
 use t_rpc::{
-    Request,
-    proto::{Username, internal_rpc_client::InternalRpcClient},
+    protos::internal::{Username, internal_rpc_client::InternalRpcClient},
+    tonic::Request,
     web::GrpcWebClientLayer,
 };
 use tower::ServiceBuilder;

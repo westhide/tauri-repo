@@ -15,7 +15,9 @@ workspace = true
 
 
 [dependencies]
+nill      = { workspace = true }
 prost     = { workspace = true }
+rkyv      = { workspace = true, features = ["unaligned"], optional = true }
 tonic     = { workspace = true, features = ["codegen", "prost"] }
 tonic-web = { workspace = true }
 
@@ -25,6 +27,7 @@ tonic-build = { workspace = true, features = ["prost"] }
 
 
 [features]
-default   = []
-router    = ["tonic/router"]
-transport = ["tonic/transport"]
+default    = ["rkyv-codec"]
+rkyv-codec = ["dep:rkyv"]
+router     = ["tonic/router"]
+transport  = ["tonic/transport"]

@@ -22,7 +22,10 @@ use http_body_util::BodyExt;
 use js_sys::Uint8Array;
 use nill::{Nil, nil};
 use t_lib::log::instrument;
-use t_rpc::{Status, body::Body as GrpcBody, web::GrpcWebCall};
+use t_rpc::{
+    tonic::{Status, body::Body as GrpcBody},
+    web::GrpcWebCall,
+};
 use tower::Service;
 use wasm_bindgen::JsValue;
 use wasm_streams::ReadableStream as WasmReadableStream;

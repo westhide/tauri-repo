@@ -28,6 +28,7 @@ js-sys                     = { version = "0.3" }
 leptos                     = { version = "0.8" }
 nill                       = { version = "1.0.0" }
 prost                      = { version = "0.13" }
+rkyv                       = { version = "0.8" }
 serde                      = { version = "1" }
 serde-wasm-bindgen         = { version = "0.6" }
 serde_json                 = { version = "1" }
