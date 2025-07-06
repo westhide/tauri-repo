@@ -1,14 +1,10 @@
-mod internal {
-    tonic::include_proto!("internal");
-}
-
 use crate::{
     grpc_web_client::Client,
     log::{info, instrument},
 };
 use http::Uri;
-use internal::{internal_rpc_client::InternalRpcClient, Username};
 use std::str::FromStr;
+use t_rpc::{Username, internal_rpc_client::InternalRpcClient};
 use tonic::Request;
 use tonic_web::GrpcWebClientLayer;
 use tower::ServiceBuilder;

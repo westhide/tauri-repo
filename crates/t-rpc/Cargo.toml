@@ -1,0 +1,19 @@
+[package]
+name = "t-rpc"
+
+description = "t-rpc"
+edition     = { workspace = true }
+license     = { workspace = true }
+version     = { workspace = true }
+
+
+[lib]
+
+
+[dependencies]
+prost = { workspace = true }
+tonic = { workspace = true, features = ["codegen", "prost"] }
+
+
+[build-dependencies]
+tonic-build = { workspace = true, features = ["prost"] }

@@ -1,14 +1,10 @@
-mod internal {
-    tonic::include_proto!("internal");
-}
-
 use crate::log::{info, instrument};
-use internal::{
-    internal_rpc_server::{InternalRpc, InternalRpcServer},
+use nill::{Nil, nil};
+use t_rpc::{
     Username,
+    internal_rpc_server::{InternalRpc, InternalRpcServer},
 };
-use nill::{nil, Nil};
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{Request, Response, Status, transport::Server};
 use tonic_web::GrpcWebLayer;
 use tower_http::cors::CorsLayer;
 

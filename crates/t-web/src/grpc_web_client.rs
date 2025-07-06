@@ -76,6 +76,7 @@ impl HttpRequestExt for HttpRequest<GrpcWebCall<GrpcBody>> {
             headers.set(key.as_str(), val.to_str()?);
         }
         let bytes = self.into_body().collect().await?.to_bytes();
+        tracing::info!("{bytes:?}");
         let fetch = GlooHttpRequestBuilder::new(&uri)
             .mode(RequestMode::Cors)
             .headers(headers)

@@ -1,5 +1,5 @@
 use leptos::prelude::*;
-use tauri_repo_ui::{log::init_tracing_subscriber_log, view::Main};
+use t_web::{log::init_tracing_subscriber_log, view::Main};
 
 // #[tokio::main(flavor = "current_thread")] async
 fn main() {
