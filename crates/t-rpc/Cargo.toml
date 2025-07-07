@@ -15,9 +15,11 @@ workspace = true
 
 
 [dependencies]
+bytes     = { workspace = true }
 nill      = { workspace = true }
 prost     = { workspace = true }
 rkyv      = { workspace = true, features = ["unaligned"], optional = true }
+thiserror = { workspace = true }
 tonic     = { workspace = true, features = ["codegen", "prost"] }
 tonic-web = { workspace = true }
 

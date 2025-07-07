@@ -1,12 +1,12 @@
 use std::marker::PhantomData;
 
+use bytes::{Buf, BufMut, buf::Writer};
 use nill::{Nil, nil};
-use prost::bytes::{Buf, BufMut};
 use rkyv::{
     Archive, Deserialize, Serialize,
     api::high::{HighDeserializer, HighSerializer, to_bytes_in},
-    deserialize,
-    rancor::Error,
+    from_bytes_unchecked,
+    rancor::Error as CodecError,
     ser::{allocator::ArenaHandle, writer::IoWriter},
 };
 use tonic::{
@@ -19,13 +19,19 @@ pub struct Codec<T, U> {
     maker: PhantomData<(T, U)>,
 }
 
+pub type EWriter<'a, 'b> = IoWriter<Writer<&'a mut EncodeBuf<'b>>>;
+
+pub type ESerializer<'a, 'b, 'c> = HighSerializer<EWriter<'a, 'b>, ArenaHandle<'c>, CodecError>;
+
+pub type DSerializer = HighDeserializer<CodecError>;
+
 impl<T, U> ICodec for Codec<T, U>
 where
     T: Send + 'static,
     U: Send + 'static,
-    T: for<'a> Serialize<HighSerializer<Vec<u8>, ArenaHandle<'a>, Error>>,
+    T: for<'a, 'b, 'c> Serialize<ESerializer<'a, 'b, 'c>>,
     U: Archive,
-    U::Archived: Deserialize<U, HighDeserializer<Error>>,
+    U::Archived: Deserialize<U, DSerializer>,
 {
     type Decode = U;
     type Decoder = Decoder<U>;
@@ -54,15 +60,14 @@ impl<T> Encoder<T> {
 
 impl<T> IEncoder for Encoder<T>
 where
-    T: for<'a> Serialize<HighSerializer<Vec<u8>, ArenaHandle<'a>, Error>>,
+    T: for<'a, 'b, 'c> Serialize<ESerializer<'a, 'b, 'c>>,
 {
     type Error = Status;
     type Item = T;
 
-    fn encode(&mut self, item: Self::Item, dst: &mut EncodeBuf<'_>) -> Result<Nil, Self::Error> {
-        let bytes = Vec::new();
-        let src = to_bytes_in(&item, bytes).unwrap();
-        dst.put_slice(&src);
+    fn encode(&mut self, item: Self::Item, buf: &mut EncodeBuf<'_>) -> Result<Nil, Self::Error> {
+        let writer = buf.writer();
+        to_bytes_in(&item, IoWriter::new(writer)).map_err(Error::Codec)?;
         Ok(nil)
     }
 }
@@ -81,14 +86,27 @@ impl<U> Decoder<U> {
 impl<U> IDecoder for Decoder<U>
 where
     U: Archive,
-    U::Archived: Deserialize<U, HighDeserializer<Error>>,
+    U::Archived: Deserialize<U, DSerializer>,
 {
     type Error = Status;
     type Item = U;
 
-    fn decode(&mut self, src: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
-        let archived = unsafe { rkyv::access_unchecked::<U::Archived>(src.chunk()) };
-        let deserialized = deserialize::<U, Error>(archived).unwrap();
-        Ok(Some(deserialized))
+    fn decode(&mut self, buf: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+        let bytes = buf.chunk();
+        let value = unsafe { from_bytes_unchecked::<U, CodecError>(bytes) };
+        buf.advance(bytes.len());
+        Ok(Some(value.map_err(Error::Codec)?))
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Codec(#[from] CodecError),
+}
+
+impl From<Error> for Status {
+    fn from(err: Error) -> Self {
+        Status::internal(format!("{err}"))
     }
 }
