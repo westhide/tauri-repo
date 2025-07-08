@@ -26,6 +26,7 @@ http-body                  = { version = "1.0" }
 http-body-util             = { version = "0.1" }
 js-sys                     = { version = "0.3" }
 leptos                     = { version = "0.8" }
+mimalloc                   = { version = "0.1" }
 nill                       = { version = "1.0.0" }
 prost                      = { version = "0.13" }
 rkyv                       = { version = "0.8" }

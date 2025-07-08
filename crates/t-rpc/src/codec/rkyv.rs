@@ -14,9 +14,15 @@ use tonic::{
     codec::{Codec as ICodec, DecodeBuf, Decoder as IDecoder, EncodeBuf, Encoder as IEncoder},
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Codec<T, U> {
     maker: PhantomData<(T, U)>,
+}
+
+impl<T, U> Default for Codec<T, U> {
+    fn default() -> Self {
+        Self { maker: PhantomData }
+    }
 }
 
 pub type EWriter<'a, 'b> = IoWriter<Writer<&'a mut EncodeBuf<'b>>>;

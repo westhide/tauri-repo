@@ -31,3 +31,8 @@ tracing             = { workspace = true }
 
 [build-dependencies]
 tauri-build = { workspace = true, features = ["config-toml"] }
+
+
+[features]
+default  = ["mimalloc"]
+mimalloc = ["t-lib/mimalloc"]
