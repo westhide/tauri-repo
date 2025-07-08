@@ -6,8 +6,15 @@ edition     = { workspace = true }
 license     = { workspace = true }
 version     = { workspace = true }
 
+
 [lib]
 crate-type = ["cdylib", "rlib", "staticlib"]
+
+
+[features]
+default       = ["encoding-gzip", "mimalloc"]
+encoding-gzip = ["t-rpc/gzip"]
+mimalloc      = ["t-lib/mimalloc"]
 
 
 [lints]
@@ -31,9 +38,3 @@ tracing             = { workspace = true }
 
 [build-dependencies]
 tauri-build = { workspace = true, features = ["config-toml"] }
-
-
-[features]
-default       = ["encoding-gzip", "mimalloc"]
-encoding-gzip = ["t-rpc/gzip"]
-mimalloc      = ["t-lib/mimalloc"]

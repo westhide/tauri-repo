@@ -1,7 +1,7 @@
 pub mod log;
 pub mod rpc;
 
-use nill::Nil;
+use nill::{Nil, nil};
 use t_lib::log::{error, info, trace};
 use tauri::{Result, async_runtime::spawn};
 
@@ -24,7 +24,7 @@ pub fn run() -> Result<Nil> {
                 }
                 info!("rpc finish");
             });
-            Ok(())
+            Ok(nil)
         })
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())

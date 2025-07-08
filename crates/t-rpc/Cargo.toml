@@ -8,6 +8,15 @@ version     = { workspace = true }
 
 
 [lib]
+crate-type = ["cdylib", "rlib", "staticlib"]
+
+
+[features]
+default    = ["rkyv-codec"]
+gzip       = ["tonic/gzip"]      # TODO: zstd(wasm)
+rkyv-codec = ["dep:rkyv"]
+router     = ["tonic/router"]
+transport  = ["tonic/transport"]
 
 
 [lints]
@@ -26,11 +35,3 @@ tonic-web = { workspace = true }
 
 [build-dependencies]
 tonic-build = { workspace = true, features = ["prost"] }
-
-
-[features]
-default    = ["rkyv-codec"]
-gzip       = ["tonic/gzip"]
-rkyv-codec = ["dep:rkyv"]
-router     = ["tonic/router"]
-transport  = ["tonic/transport"]
