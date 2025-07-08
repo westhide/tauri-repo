@@ -1,7 +1,7 @@
 use nill::{Nil, nil};
 use t_lib::{
     error::Result,
-    log::{info, instrument},
+    log::{Level, info, instrument},
 };
 use t_rpc::{
     protos::internal::{
@@ -18,7 +18,7 @@ pub struct InternalRpcImpl {}
 
 #[async_trait]
 impl InternalRpc for InternalRpcImpl {
-    #[instrument(skip_all, err)]
+    #[instrument(level = Level::TRACE, skip_all, err)]
     async fn get_username(&self, req: Request<Username>) -> Result<Response<Username>, Status> {
         Ok(Response::new(Username { username: format!("Username: {}", req.into_inner().username) }))
     }
