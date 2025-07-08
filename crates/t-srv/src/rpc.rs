@@ -28,7 +28,13 @@ pub async fn run() -> Result<Nil> {
     info!("rpc run");
 
     let internal_rpc = InternalRpcImpl::default();
-    let service = InternalRpcServer::new(internal_rpc);
+    let mut service = InternalRpcServer::new(internal_rpc);
+
+    #[cfg(feature = "encoding-gzip")]
+    {
+        use t_rpc::tonic::codec::CompressionEncoding::Gzip;
+        service = service.accept_compressed(Gzip).send_compressed(Gzip);
+    }
 
     let socket = "127.0.0.1:3000".parse()?;
     Server::builder()

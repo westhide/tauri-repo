@@ -23,6 +23,12 @@ pub async fn get_username(username: String) -> Result<String> {
     let uri = Uri::from_str("http://127.0.0.1:3000")?;
     let mut client = InternalRpcClient::with_origin(service, uri);
 
+    #[cfg(feature = "encoding-gzip")]
+    {
+        use t_rpc::tonic::codec::CompressionEncoding::Gzip;
+        client = client.accept_compressed(Gzip).send_compressed(Gzip);
+    }
+
     let request = Request::new(Username { username });
 
     let response = client.get_username(request).await?;

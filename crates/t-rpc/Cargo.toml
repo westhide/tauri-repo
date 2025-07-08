@@ -30,6 +30,7 @@ tonic-build = { workspace = true, features = ["prost"] }
 
 [features]
 default    = ["rkyv-codec"]
+gzip       = ["tonic/gzip"]
 rkyv-codec = ["dep:rkyv"]
 router     = ["tonic/router"]
 transport  = ["tonic/transport"]

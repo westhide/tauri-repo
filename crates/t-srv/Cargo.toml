@@ -34,5 +34,6 @@ tauri-build = { workspace = true, features = ["config-toml"] }
 
 
 [features]
-default  = ["mimalloc"]
-mimalloc = ["t-lib/mimalloc"]
+default       = ["encoding-gzip", "mimalloc"]
+encoding-gzip = ["t-rpc/gzip"]
+mimalloc      = ["t-lib/mimalloc"]

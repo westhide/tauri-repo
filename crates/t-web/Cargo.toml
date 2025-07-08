@@ -39,3 +39,8 @@ web-sys      = { workspace = true }
 
 
 [build-dependencies]
+
+
+[features]
+default       = ["encoding-gzip"]
+encoding-gzip = ["t-rpc/gzip"]
