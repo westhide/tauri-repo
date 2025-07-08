@@ -24,6 +24,10 @@ tonic     = { workspace = true, features = ["codegen", "prost"] }
 tonic-web = { workspace = true }
 
 
+[dev-dependencies]
+criterion = { workspace = true }
+
+
 [build-dependencies]
 tonic-build = { workspace = true, features = ["prost"] }
 
@@ -33,3 +37,8 @@ default    = ["rkyv-codec"]
 rkyv-codec = ["dep:rkyv"]
 router     = ["tonic/router"]
 transport  = ["tonic/transport"]
+
+
+[[bench]]
+harness = false
+name    = "codec"
